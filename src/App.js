@@ -19,9 +19,7 @@ const useStyles = makeStyles((theme) => ({
 function App() {
   const classes = useStyles();
   let [state, setState] = React.useState({
-    field1: 0,
-    field2: 0,
-    field3: 0,
+    field: [0, 0, 0],
     opration: "+",
     checkbox: [true, true, true],
     total: 0,
@@ -43,9 +41,11 @@ function App() {
   }
 
   const handleChange = (event) => {
+    const { field } = state;
     const re = /^[0-9\b]+$/;
     if (event.target.value === "" || re.test(event.target.value)) {
-      setState({ ...state, [event.target.name]: event.target.value });
+      field[event.target.name] = event.target.value;
+      setState({ ...state, field });
     }
   };
 
@@ -55,33 +55,27 @@ function App() {
     setState({ ...state, checkbox });
   };
 
-  const count = () => {
-    let { field1, field2, field3, opration, checkbox } = state;
-    switch (opration) {
-      case "-":
-        state.total =
-          parseInt(checkbox[0] ? field1 : 0) -
-          parseInt(checkbox[1] ? field2 : 0) -
-          parseInt(checkbox[2] ? field3 : 0);
-        break;
-      case "/":
-        state.total =
-          (checkbox[0] ? parseInt(field1) : 1) /
-          (checkbox[1] ? parseInt(field2) : 1) /
-          (checkbox[2] ? parseInt(field3) : 1);
-        break;
-      case "x":
-        state.total =
-          (checkbox[0] ? parseInt(field1) : 1) *
-          (checkbox[1] ? parseInt(field2) : 1) *
-          (checkbox[2] ? parseInt(field3) : 1);
-        break;
-      default:
-        state.total =
-          (checkbox[0] ? parseInt(field1) : 0) +
-          (checkbox[1] ? parseInt(field2) : 0) +
-          (checkbox[2] ? parseInt(field3) : 0);
-    }
+  const count = (data) => {
+    let { field, opration, checkbox } = state;
+    let counting = opration === "/" || opration === "x" ? 1 : 0;
+    checkbox.map((value, key) => {
+      if (value) {
+        switch (opration) {
+          case "-":
+            counting -= parseInt(field[key]);
+            break;
+          case "/":
+            counting /= parseInt(field[key]);
+            break;
+          case "x":
+            counting *= parseInt(field[key]);
+            break;
+          default:
+            counting += parseInt(field[key]);
+        }
+      }
+    });
+    state.total = counting;
     const newValues = { ...state };
     setState(newValues);
   };
@@ -95,9 +89,9 @@ function App() {
       setState(newValues);
     }
   }, [
-    state.field1,
-    state.field2,
-    state.field3,
+    state.field[0],
+    state.field[1],
+    state.field[2],
     state.opration,
     state.checkbox[0],
     state.checkbox[1],
@@ -110,9 +104,9 @@ function App() {
         <Grid item xs={12}>
           <TextField
             id="outlined-basic"
-            name="field1"
+            name="0"
             type="number"
-            value={state.field1}
+            value={state.field[0]}
             disabled={!state.checkbox[0]}
             onChange={handleChange}
             variant="outlined"
@@ -126,9 +120,9 @@ function App() {
         <Grid item xs={12}>
           <TextField
             id="outlined-basic"
-            name="field2"
+            name="1"
             type="number"
-            value={state.field2}
+            value={state.field[1]}
             disabled={!state.checkbox[1]}
             onChange={handleChange}
             variant="outlined"
@@ -142,9 +136,9 @@ function App() {
         <Grid item xs={12}>
           <TextField
             id="outlined-basic"
-            name="field3"
+            name="2"
             type="number"
-            value={state.field3}
+            value={state.field[2]}
             disabled={!state.checkbox[2]}
             onChange={handleChange}
             variant="outlined"
